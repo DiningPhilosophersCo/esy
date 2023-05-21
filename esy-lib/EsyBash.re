@@ -1,6 +1,8 @@
 /**
  * Helper method to get the root path of the 'esy-bash' node modules
  */
+let esyInstalledLocation = ref("");
+let setEsyInstalledLocation = p => esyInstalledLocation := p;
 let getEsyBashRootPath = () =>
   switch (Sys.getenv_opt("ESY__ESY_BASH")) {
   | Some(path) => Path.v(path)
@@ -21,11 +23,6 @@ let getCygPath = () =>
   Path.(getEsyBashRootPath() / ".cygwin" / "bin" / "cygpath.exe");
 
 let getBinPath = () => Path.(getEsyBashRootPath() / ".cygwin" / "bin");
-
-let getEsyBashPath = () =>
-  Path.(
-    getEsyBashRootPath() / "re" / "_build" / "default" / "bin" / "EsyBash.exe"
-  );
 
 let getMingwRuntimePath = () => {
   let rootPath = getEsyBashRootPath();
@@ -57,22 +54,22 @@ let normalizePathForCygwin = path =>
   | _ => path
   };
 
-let toEsyBashCommand = (~env=None, cmd) => {
-  let environmentFilePath =
-    switch (env) {
-    | None => []
-    | Some(fp) => ["--env", fp]
-    };
+/* let toEsyBashCommand = (~env=None, cmd) => { */
+/*   let environmentFilePath = */
+/*     switch (env) { */
+/*     | None => [] */
+/*     | Some(fp) => ["--env", fp] */
+/*     }; */
 
-  switch (System.Platform.host) {
-  | Windows =>
-    let commands = Bos.Cmd.to_list(cmd);
-    let esyBashPath = getEsyBashPath();
-    let allCommands = List.append(environmentFilePath, commands);
-    Bos.Cmd.of_list([Path.show(esyBashPath), ...allCommands]);
-  | _ => cmd
-  };
-};
+/*   switch (System.Platform.host) { */
+/*   | Windows => */
+/*     let commands = Bos.Cmd.to_list(cmd); */
+/*     let esyBashPath = EsyBashLib.bashExec(~environment=env); */
+/*     let allCommands = List.append(environmentFilePath, commands); */
+/*     Bos.Cmd.of_list([Path.show(esyBashPath), ...allCommands]); */
+/*   | _ => cmd */
+/*   }; */
+/* }; */
 
 /**
 * Helper utility to normalize paths to a Windows style.
@@ -112,8 +109,8 @@ let currentEnvWithMingwInPath = {
   let current = System.Environment.current;
   switch (System.Platform.host) {
   | System.Platform.Windows =>
-    let mingw = getMingwRuntimePath();
-    let path = [Path.show(mingw), ...System.Environment.path];
+    /* let mingw = getMingwRuntimePath(); */
+    let path = System.Environment.path; // [Path.show(mingw), ...System.Environment.path];
     StringMap.add("PATH", System.Environment.join(path), current);
   | _ => current
   };
@@ -127,12 +124,13 @@ type error = [ | `CommandError(Bos.Cmd.t, Bos.OS.Cmd.status) | `Msg(string)];
  * On other platforms, this is equivalent to running the command directly with Bos.OS.Cmd.run
  */
 let run = cmd => {
-  let cmd = toEsyBashCommand(cmd);
-  Bos.OS.Cmd.run(cmd);
+  cmd |> EsyBashLib.bashExec;
 };
 
 let runOut = cmd => {
-  let cmd = toEsyBashCommand(cmd);
-  let ret = Bos.OS.Cmd.(run_out(cmd));
-  Bos.OS.Cmd.to_string(ret);
+  cmd |> EsyBashLib.bashExecOut |> Bos.OS.Cmd.to_string;
+};
+
+let runAsync = cmd => {
+  cmd |> EsyBashLib.bashExecLwt |> RunAsync.ofLwt;
 };

@@ -83,3 +83,4 @@ let getInternalCommand = (internalCommandName, ()) => {
 let getRewritePrefixCommand = getInternalCommand("esyRewritePrefixCommand");
 let getEsyBuildPackageCommand = getInternalCommand("esyBuildPackageCommand");
 let getEsySolveCudfCommand = getInternalCommand("esySolveCudfCommand");
+let getEsyBashCommand = getInternalCommand("EsyBash");

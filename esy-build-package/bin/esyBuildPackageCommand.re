@@ -20,6 +20,7 @@ type commonOpts = {
   globalPathVariable: option(string),
 };
 
+EsyLib.EsyBash.setEsyInstalledLocation(EsyLib.Path.(exePath() |> parent |> parent |> parent |> show));
 let setupLog = (style_renderer, level) => {
   let style_renderer = Option.orDefault(~default=`None, style_renderer);
   Esy_fmt_tty.setup_std_outputs(~style_renderer, ());
