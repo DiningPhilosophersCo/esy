@@ -8,8 +8,7 @@ let runGit = cmd => {
     let%lwt stdout = Lwt_io.read(p#stdout)
     and stderr = Lwt_io.read(p#stderr);
     switch%lwt (p#status) {
-    | Unix.WEXITED(0) =>
-      RunAsync.return(stdout)
+    | Unix.WEXITED(0) => RunAsync.return(stdout)
     | _ =>
       RunAsync.errorf(
         "@[<v>command failed: %a@\nstderr:@[<v 2>@\n%a@]@\nstdout:@[<v 2>@\n%a@]@]",
@@ -113,7 +112,8 @@ let revParse = (~repo, ~ref, ()) => {
 };
 
 let fetch = (~depth=?, ~dst, ~ref, ~remote, ()) => {
-  let cmd = Cmd.(v(gitCommand) % "-C" % Path.show(dst) % "fetch" % remote % ref);
+  let cmd =
+    Cmd.(v(gitCommand) % "-C" % Path.show(dst) % "fetch" % remote % ref);
   let cmd =
     switch (depth) {
     | Some(depth) => Cmd.(cmd % "--depth" % string_of_int(depth))

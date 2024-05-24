@@ -3,6 +3,7 @@
 #include <caml/alloc.h>
 #include <caml/memory.h>
 #include <caml/mlvalues.h>
+#include <caml/fail.h>
 
 #ifdef WIN32
 #include <Windows.h>
@@ -57,3 +58,88 @@ esy_move_file(value src, value dst) {
 #endif
   return Val_unit;
 }  
+
+
+CAMLprim value
+esy_win32_get_regkey(value path, value reg_val) {
+#ifndef WIN32
+   caml_failwith("Called in a non-Windows environment"); 
+#else
+    size_t chars_converted;
+    const char* c_path = String_val(path);
+    size_t path_size = strlen(c_path) + 1;
+    wchar_t* wc_path = (wchar_t*)malloc(path_size * sizeof(wchar_t));
+    chars_converted = mbstowcs(wc_path, c_path, path_size);
+    if (chars_converted == (size_t) -1) {
+      caml_failwith("Internal system error: Could not convert to wide char string");
+    }
+    const char* c_reg_val = String_val(reg_val);
+    size_t reg_val_size = strlen(c_reg_val) + 1;
+    wchar_t* wc_reg_val = (wchar_t*)malloc(reg_val_size * sizeof(wchar_t));
+    chars_converted = mbstowcs(wc_reg_val, c_reg_val, reg_val_size);
+    if (chars_converted == (size_t) -1) {
+      free(wc_path);
+      free(wc_reg_val);
+      caml_failwith("Internal system error: Could not convert to wide char string");
+    }
+    HKEY hKey;
+    LONG code = RegOpenKeyExW(
+            HKEY_LOCAL_MACHINE,
+	    wc_path,
+            0,
+            KEY_READ|KEY_WOW64_64KEY,
+            &hKey);
+
+    if (code != ERROR_SUCCESS) {
+      DWORD dwError = GetLastError();
+      char msg[1024];
+        LPVOID lpMsgBuf;
+        DWORD dwChars = FormatMessageA(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+            NULL,
+            dwError,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+            (LPSTR) &lpMsgBuf,
+            0,
+            NULL
+        );
+        if (dwChars != 0) {
+            // Print the error message with formatting
+	  sprintf(msg, "Error opening registry key: %s.\n Reason: %s (Error code: %d)\n", c_path, (LPSTR)lpMsgBuf, dwError);
+
+            // Free the allocated buffer
+            LocalFree(lpMsgBuf);
+        } else {
+            // Handle the case where FormatMessageW fails
+	  sprintf(msg, "Failed to format error message (Error code: %d)\n", dwError);
+        }
+
+      /* DWORD_PTR pArgs[] = { (DWORD_PTR) wc_path }; */
+      /* FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,  L"Failed to open registry key with path: %1!*.*s!", 0, 0, msg, 1024, (va_list*)pArgs); */
+      free(wc_path);
+      free(wc_reg_val);
+      caml_failwith(msg);
+    }
+
+    const int value_bytes_length = 1024;
+    BYTE *buffer = (BYTE*)LocalAlloc(LPTR, value_bytes_length);
+    DWORD length = {value_bytes_length};
+    code = RegQueryValueExA(
+            hKey,
+	    c_reg_val,
+            0,
+            0,
+            buffer,
+            &length
+            );
+
+    if (code != ERROR_SUCCESS) {
+      char msg[1024];
+      sprintf(msg, "Failed to get registry val (%s) with path: %s", c_reg_val, c_path);
+      caml_failwith(msg);
+    }
+
+    return caml_alloc_initialized_string(strlen(buffer), buffer);
+
+#endif
+}

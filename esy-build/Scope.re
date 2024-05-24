@@ -1,3 +1,4 @@
+// HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v10.0
 open DepSpec;
 open EsyPackageConfig;
 
@@ -305,9 +306,8 @@ module PackageScope: {
         installPath(scope);
       };
 
-    let p = v => SandboxValue.show(SandboxPath.toValue(v));
+    let p = v => SandboxValue.show(SandboxPath.toValue(v)) /* add builtins */;
 
-    /* add builtins */
     let env = [
       set("OCAMLFIND_DESTDIR", p(SandboxPath.(installPath / "lib"))),
       set("OCAMLFIND_LDCONF", "ignore"),
@@ -401,13 +401,7 @@ let make =
     finalEnv: {
       let defaultPath =
         switch (platform, globalPathVariable) {
-        | (Windows, Some(pathVar)) =>
-          let esyGlobalPath = Sys.getenv(pathVar);
-          "$PATH;" ++ esyGlobalPath;
-        | (Windows, None) =>
-          let windir = Sys.getenv("WINDIR") ++ "/System32";
-          let windir = Path.normalizePathSepOfFilename(windir);
-          "$PATH;/usr/local/bin;/usr/bin;/bin;/usr/sbin;/sbin;" ++ windir;
+        | (Windows, _) => "$PATH"
         | (_, Some(pathVar)) =>
           let esyGlobalPath = Sys.getenv(pathVar);
           "$PATH:" ++ esyGlobalPath;
@@ -677,13 +671,24 @@ let env = (~includeBuildEnv, ~buildIsInProgress, scope) => {
       return([]);
     };
 
+  let additionalMSVCEnv /* for msvc */ =
+    if (System.Platform.isWindows) {
+      switch (MSVC.compilerPaths(None)) {
+      | Ok(vars) => vars
+      | Error(_) => []
+      };
+    } else {
+      [];
+    };
+
   return(
     List.rev(
       scope.finalEnv
       @ buildEnv
       @ dependenciesEnv
       @ buildEnvAuto
-      @ scope.sandboxEnv,
+      @ scope.sandboxEnv
+      @ additionalMSVCEnv,
     ),
   );
 };
