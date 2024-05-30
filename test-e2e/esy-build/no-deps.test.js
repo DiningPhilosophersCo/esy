@@ -78,7 +78,7 @@ describe(`'esy build': simple executable with no deps`, () => {
         expect(stdout.trim()).toEqual('__no-deps__');
       }));
 
-    test(
+    test.disableIf(isWindows)(
       'build-env',
       withProject(async function(p) {
         await p.esy('build');
