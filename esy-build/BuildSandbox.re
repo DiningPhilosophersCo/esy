@@ -1062,23 +1062,22 @@ let exec =
       let* () =
         RunAsync.ofBosError @@
         Bos.OS.File.write(environmentTempFile, jsonString);
-      let commandAsList = Bos.Cmd.to_list(Cmd.toBosCmd(cmd));
 
-      /* Normalize slashes in the command we send to esy-bash */
-      let normalizedCommands =
-        Bos.Cmd.of_list(
-          Stdlib.List.map(
-            EsyLib.Path.normalizePathSepOfFilename,
-            commandAsList,
-          ),
-        );
-      let augmentedEsyCommand =
-        EsyLib.EsyBash.toEsyBashCommand(
-          ~env=Some(Fpath.to_string(environmentTempFile)),
-          normalizedCommands,
-        );
+      let* cmd =
+        cmd
+        |> Cmd.toBosCmd
+        |> Bos.Cmd.to_list
+        |> Stdlib.List.map(
+             EsyLib.Path.normalizePathSepOfFilename,
+             /* Normalize slashes in the command we send to esy-bash */
+           )
+        |> Bos.Cmd.of_list
+        |> EsyLib.EsyBash.toEsyBashCommand(
+             ~env=Some(Fpath.to_string(environmentTempFile)),
+           )
+        |> Cmd.ofBosCmd
+        |> RunAsync.ofBosError;
 
-      let* cmd = RunAsync.ofBosError @@ Cmd.ofBosCmd(augmentedEsyCommand);
       ChildProcess.withProcess(
         ~env=CustomEnv(env),
         ~resolveProgramInEnv=true,

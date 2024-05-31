@@ -1,0 +1,8 @@
+; (library
+;   (name EsyBashLibTests)
+;   (library_flags (-linkall))
+;   (libraries EsyBashLib unix ppx_inline_test.runtime-lib)
+;   (modules (:standard))
+;   (inline_tests)
+;   (preprocess (pps ppx_inline_test)))
+
