@@ -63,7 +63,7 @@ let getInternalCommand = (internalCommandName, ()) => {
         Sys.getenv_opt("_")
         |> RunAsync.ofOption(
              ~err=
-               "Could not find _ in the environment. We look this variable up to resolve internal commands",
+               "esy-runtime: Could not find _ in the environment. We look this variable up to resolve internal commands",
            );
       let* path = Path.ofString(path) |> RunAsync.ofBosError;
       let* v = resolveRelativeTo(~internalCommandName, path);

@@ -50,7 +50,7 @@ let getInternalCommand = (internalCommandName, ()) => {
         | None =>
           Error(
             `Msg(
-              "Could not find _ in the environment. We look this variable up to resolve internal commands",
+              "esy-build: Could not find _ in the environment. We look this variable up to resolve internal commands",
             ),
           )
         };
