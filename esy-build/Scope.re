@@ -406,15 +406,13 @@ let getMSVCVars = globalPathVariable => {
             Some(
               SandboxEnvironment.Bindings.value(
                 a,
-                /* b */
-                /* ++ ";" */
-                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.40.33807\\lib\\x64"
+                b
+                ++ ";"
+                ++ "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.40.33807\\lib\\x64"
                 ++ ";"
                 ++ "C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.20348.0\\um\\x64"
                 ++ ";"
                 ++ "C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.20348.0\\ucrt\\x64"
-                ++ ";"
-                ++ "C:\\Program Files (x86)\\Windows Kits\\10\\Bin\\10.0.20348.0\\x64"
                 |> SandboxValue.v,
               ),
             )
@@ -434,11 +432,14 @@ let getMSVCVars = globalPathVariable => {
               SandboxEnvironment.Bindings.value(
                 a,
                 "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.40.33807\\bin\\HostX64\\x64;"
+                ++ "/bin;/usr/bin;" // This order is important for some reason. Otherwise, compiler fails to build with /entry:wmainCRTStartup is invalid option
                 ++ b
                 ++ ";"
                 ++ windir
                 ++ ";"
                 ++ defaultPath
+                ++ ";"
+                ++ "C:\\Program Files (x86)\\Windows Kits\\10\\Bin\\10.0.20348.0\\x64"
                 |> SandboxValue.v,
               ),
             );
