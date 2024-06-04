@@ -401,8 +401,6 @@ let getMSVCVars = globalPathVariable => {
             )
           | ["LIBPATH" as a, b, ..._r]
           | ["LIB" as a, b, ..._r] =>
-            /* let withPathSepNormalised = b |> String.split_on_char(';') |> List.map(~f=x => x |> Path.normalizePathSepOfFilename  |> EsyBash.normalizePathForCygwin) |> String.concat(":"); */
-            /* Some(SandboxEnvironment.Bindings.value(a, withPathSepNormalised |> SandboxValue.v)) */
             Some(
               SandboxEnvironment.Bindings.value(
                 a,
@@ -417,8 +415,8 @@ let getMSVCVars = globalPathVariable => {
               ),
             )
 
-          | ["PATH" as a, b, ..._r]
-          | ["Path" as a, b, ..._r] =>
+          | ["PATH", b, ..._r]
+          | ["Path", b, ..._r] =>
             let defaultPath =
               switch (globalPathVariable) {
               | Some(pathVar) =>
@@ -430,7 +428,7 @@ let getMSVCVars = globalPathVariable => {
             let windir = Path.normalizePathSepOfFilename(windir);
             Some(
               SandboxEnvironment.Bindings.value(
-                a,
+                "PATH",
                 "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.40.33807\\bin\\HostX64\\x64;"
                 ++ "/bin;/usr/bin;" // This order is important for some reason. Otherwise, compiler fails to build with /entry:wmainCRTStartup is invalid option
                 ++ b
@@ -498,23 +496,12 @@ let make =
         | (_, None) => "$PATH:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
         };
 
-      let additionalEnv /* for msvc */ =
-        switch (platform) {
-        | Windows =>
-          switch (getMSVCVars(globalPathVariable)) {
-          | Ok(vars) => vars
-          | Error(_) => []
-          }
-        | _ => []
-        };
-
       SandboxEnvironment.[
         Bindings.value("PATH", SandboxValue.v(defaultPath)),
         Bindings.value(
           "SHELL",
           SandboxValue.v("env -i /bin/bash --norc --noprofile"),
         ),
-        ...additionalEnv,
       ];
     },
   };
@@ -772,13 +759,26 @@ let env = (~includeBuildEnv, ~buildIsInProgress, scope) => {
       return([]);
     };
 
+      let additionalMSVCEnv /* for msvc */ =
+    if (System.Platform.isWindows) {
+          switch (getMSVCVars(None)) {
+          | Ok(vars) => vars
+          | Error(_) => []
+          }
+    } else {
+
+      []
+        }
+
+
   return(
     List.rev(
       scope.finalEnv
       @ buildEnv
       @ dependenciesEnv
       @ buildEnvAuto
-      @ scope.sandboxEnv,
+      @ scope.sandboxEnv
+      @ additionalMSVCEnv,
     ),
   );
 };
