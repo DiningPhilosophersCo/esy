@@ -63,7 +63,7 @@ jobs:
 
       - name: Publish to NPM registry
         working-directory: _release
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/prometheansacrifice/msvc'
         run: npm publish --access=public .
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
