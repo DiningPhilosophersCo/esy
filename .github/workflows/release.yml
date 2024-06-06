@@ -39,13 +39,13 @@ jobs:
 
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/prometheansacrifice/msvc'
         with:
           files: npm-release.tgz
 
       - name: Publish to NPM registry
         working-directory: _release
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/prometheansacrifice/msvc'
         run: npm publish --access=public .
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
