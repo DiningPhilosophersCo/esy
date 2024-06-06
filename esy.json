@@ -1,5 +1,5 @@
 {
-  "name": "esy",
+  "name": "@diningphilosophers/esy",
   "version": "0.6.14",
   "description": "Package builder for esy.",
   "license": "BSD-2-Clause",
