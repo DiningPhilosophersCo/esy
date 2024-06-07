@@ -1,3 +1,4 @@
+// HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v10.0
 open DepSpec;
 open EsyPackageConfig;
 
