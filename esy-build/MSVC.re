@@ -4,6 +4,8 @@ module SandboxEnvironment = EsyBuildPackage.Config.Environment;
 let productInstallationPath = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools";
 let windowsKitPath = "C:\\Program Files (x86)\\Windows Kits";
 let arch = "x64";
+let hostArchFolder = "HostX64";
+let windowsVersion = "10";
 let compilerPaths = globalPathVariable => {
   open Run.Syntax;
   /*
@@ -50,18 +52,21 @@ let compilerPaths = globalPathVariable => {
                 b
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\10\\Include\\10.0.20348.0\\ucrt",
+                     "%s\\%s\\Include\\10.0.20348.0\\ucrt",
                      windowsKitPath,
+                     windowsVersion,
                    )
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\10\\Include\\10.0.20348.0\\um",
+                     "%s\\%s\\Include\\10.0.20348.0\\um",
                      windowsKitPath,
+                     windowsVersion,
                    )
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\10\\Include\\10.0.20348.0\\shared",
+                     "%s\\%s\\Include\\10.0.20348.0\\shared",
                      windowsKitPath,
+                     windowsVersion,
                    )
                 |> SandboxValue.v,
               ),
@@ -79,14 +84,16 @@ let compilerPaths = globalPathVariable => {
                    )
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\10\\Lib\\10.0.20348.0\\um\\%s",
+                     "%s\\%s\\Lib\\10.0.20348.0\\um\\%s",
                      windowsKitPath,
+                     windowsVersion,
                      arch,
                    )
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\10\\Lib\\10.0.20348.0\\ucrt\\%s",
+                     "%s\\%s\\Lib\\10.0.20348.0\\ucrt\\%s",
                      windowsKitPath,
+                     windowsVersion,
                      arch,
                    )
                 |> SandboxValue.v,
@@ -108,8 +115,9 @@ let compilerPaths = globalPathVariable => {
               SandboxEnvironment.Bindings.value(
                 "PATH",
                 Printf.sprintf(
-                  "%s\\VC\\Tools\\MSVC\\14.40.33807\\bin\\HostX64\\%s;",
+                  "%s\\VC\\Tools\\MSVC\\14.40.33807\\bin\\%s\\%s;",
                   productInstallationPath,
+                  hostArchFolder,
                   arch,
                 )
                 ++ "/bin;/usr/bin;"  // This order is important for some reason. Otherwise, compiler fails to build with /entry:wmainCRTStartup is invalid option
@@ -120,8 +128,9 @@ let compilerPaths = globalPathVariable => {
                 ++ defaultPath
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\10\\Bin\\10.0.20348.0\\%s",
+                     "%s\\%s\\Bin\\10.0.20348.0\\%s",
                      windowsKitPath,
+                     windowsVersion,
                      arch,
                    )
                 |> SandboxValue.v,
