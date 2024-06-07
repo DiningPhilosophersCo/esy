@@ -361,7 +361,6 @@ type t = {
   finalEnv: SandboxEnvironment.Bindings.t,
 };
 
-
 let make =
     (
       ~platform,
@@ -672,17 +671,15 @@ let env = (~includeBuildEnv, ~buildIsInProgress, scope) => {
       return([]);
     };
 
-      let additionalMSVCEnv /* for msvc */ =
+  let additionalMSVCEnv /* for msvc */ =
     if (System.Platform.isWindows) {
-          switch (MSVC.compilerPaths(None)) {
-          | Ok(vars) => vars
-          | Error(_) => []
-          }
+      switch (MSVC.compilerPaths(None)) {
+      | Ok(vars) => vars
+      | Error(_) => []
+      };
     } else {
-
-      []
-        }
-
+      [];
+    };
 
   return(
     List.rev(
