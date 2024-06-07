@@ -6,6 +6,7 @@ let windowsKitPath = "C:\\Program Files (x86)\\Windows Kits";
 let arch = "x64";
 let hostArchFolder = "HostX64";
 let windowsVersion = "10";
+let windowsKitProductVersion = "10.0.20348.0";
 let compilerPaths = globalPathVariable => {
   open Run.Syntax;
   /*
@@ -33,7 +34,7 @@ let compilerPaths = globalPathVariable => {
       )
       % arch
       % "uwp"
-      % "10.0.20348.0"
+      % windowsKitProductVersion
       % "&&"
       % "set"
     );
@@ -52,21 +53,24 @@ let compilerPaths = globalPathVariable => {
                 b
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\%s\\Include\\10.0.20348.0\\ucrt",
+                     "%s\\%s\\Include\\%s\\ucrt",
                      windowsKitPath,
                      windowsVersion,
+                     windowsKitProductVersion,
                    )
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\%s\\Include\\10.0.20348.0\\um",
+                     "%s\\%s\\Include\\%s\\um",
                      windowsKitPath,
                      windowsVersion,
+                     windowsKitProductVersion,
                    )
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\%s\\Include\\10.0.20348.0\\shared",
+                     "%s\\%s\\Include\\%s\\shared",
                      windowsKitPath,
                      windowsVersion,
+                     windowsKitProductVersion,
                    )
                 |> SandboxValue.v,
               ),
@@ -84,16 +88,18 @@ let compilerPaths = globalPathVariable => {
                    )
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\%s\\Lib\\10.0.20348.0\\um\\%s",
+                     "%s\\%s\\Lib\\%s\\um\\%s",
                      windowsKitPath,
                      windowsVersion,
+                     windowsKitProductVersion,
                      arch,
                    )
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\%s\\Lib\\10.0.20348.0\\ucrt\\%s",
+                     "%s\\%s\\Lib\\%s\\ucrt\\%s",
                      windowsKitPath,
                      windowsVersion,
+                     windowsKitProductVersion,
                      arch,
                    )
                 |> SandboxValue.v,
@@ -128,9 +134,10 @@ let compilerPaths = globalPathVariable => {
                 ++ defaultPath
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\%s\\Bin\\10.0.20348.0\\%s",
+                     "%s\\%s\\Bin\\%s\\%s",
                      windowsKitPath,
                      windowsVersion,
+                     windowsKitProductVersion,
                      arch,
                    )
                 |> SandboxValue.v,
