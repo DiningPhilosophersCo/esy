@@ -1,23 +1,29 @@
 module SandboxValue = EsyBuildPackage.Config.Value;
 module SandboxEnvironment = EsyBuildPackage.Config.Environment;
 
-/**
-
-   Returns environment paths (listed below) necessary to compile
-   C programs with MSVC.
-
- */
+let productInstallationPath = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools";
 let compilerPaths = globalPathVariable => {
   open Run.Syntax;
-  // C:\Windows\System32\cmd.exe /c "`"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat`" x64 && set"
-  // If vcvarsall is run, "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.40.33807\bin\HostX64\x64" is missing in Path
+  /*
+     Some notes.
+
+     * Command to display the environment from MSVC. Tested on Powershell
+     C:\Windows\System32\cmd.exe /c "`"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat`" x64 && set"
+
+     * It's not enought to just run vcvarall because of the way we call Bos.Cmd
+     If vcvarsall is run,
+     "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.40.33807\bin\HostX64\x64" is missing in Path
+
+     * The following did not work as arguments to Bos.Cmd.(v(...) <args>)
+       % "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && set" 
+       % "`\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat`\" x64 && set"
+
+   */
   let cmd =
     Bos.Cmd.(
       v(
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat",
+        Printf.sprintf("%s\\VC\\Auxiliary\\Build\\vcvarsall.bat", productInstallationPath)
       )
-      /* Did not work % "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && set" */
-      /*  Did not work % "`\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat`\" x64 && set" */
       % "x64"
       % "uwp"
       % "10.0.20348.0"
@@ -76,7 +82,7 @@ let compilerPaths = globalPathVariable => {
             Some(
               SandboxEnvironment.Bindings.value(
                 "PATH",
-                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.40.33807\\bin\\HostX64\\x64;"
+                Printf.sprintf("%s\\VC\\Tools\\MSVC\\14.40.33807\\bin\\HostX64\\x64;", productInstallationPath)
                 ++ "/bin;/usr/bin;" // This order is important for some reason. Otherwise, compiler fails to build with /entry:wmainCRTStartup is invalid option
                 ++ b
                 ++ ";"
