@@ -7,7 +7,6 @@ module SandboxEnvironment = EsyBuildPackage.Config.Environment;
    C programs with MSVC.
 
  */
-let compilerPaths: option(string) => Run.t(list(Environment.Binding.t(SandboxEnvironment.value)))
-
-
- 
+let compilerPaths:
+  option(string) =>
+  Run.t(list(Environment.Binding.t(SandboxEnvironment.value)));

@@ -2,6 +2,8 @@ module SandboxValue = EsyBuildPackage.Config.Value;
 module SandboxEnvironment = EsyBuildPackage.Config.Environment;
 
 let productInstallationPath = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools";
+let windowsKitPath = "C:\\Program Files (x86)\\Windows Kits";
+let arch = "x64";
 let compilerPaths = globalPathVariable => {
   open Run.Syntax;
   /*
@@ -15,16 +17,19 @@ let compilerPaths = globalPathVariable => {
      "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.40.33807\bin\HostX64\x64" is missing in Path
 
      * The following did not work as arguments to Bos.Cmd.(v(...) <args>)
-       % "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && set" 
+       % "\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat\" x64 && set"
        % "`\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat`\" x64 && set"
 
    */
   let cmd =
     Bos.Cmd.(
       v(
-        Printf.sprintf("%s\\VC\\Auxiliary\\Build\\vcvarsall.bat", productInstallationPath)
+        Printf.sprintf(
+          "%s\\VC\\Auxiliary\\Build\\vcvarsall.bat",
+          productInstallationPath,
+        ),
       )
-      % "x64"
+      % arch
       % "uwp"
       % "10.0.20348.0"
       % "&&"
@@ -44,11 +49,20 @@ let compilerPaths = globalPathVariable => {
                 a,
                 b
                 ++ ";"
-                ++ "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.20348.0\\ucrt"
+                ++ Printf.sprintf(
+                     "%s\\10\\Include\\10.0.20348.0\\ucrt",
+                     windowsKitPath,
+                   )
                 ++ ";"
-                ++ "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.20348.0\\um"
+                ++ Printf.sprintf(
+                     "%s\\10\\Include\\10.0.20348.0\\um",
+                     windowsKitPath,
+                   )
                 ++ ";"
-                ++ "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.20348.0\\shared"
+                ++ Printf.sprintf(
+                     "%s\\10\\Include\\10.0.20348.0\\shared",
+                     windowsKitPath,
+                   )
                 |> SandboxValue.v,
               ),
             )
@@ -59,11 +73,22 @@ let compilerPaths = globalPathVariable => {
                 a,
                 b
                 ++ ";"
-                ++ "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.40.33807\\lib\\x64"
+                ++ Printf.sprintf(
+                     "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.40.33807\\lib\\%s",
+                     arch,
+                   )
                 ++ ";"
-                ++ "C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.20348.0\\um\\x64"
+                ++ Printf.sprintf(
+                     "%s\\10\\Lib\\10.0.20348.0\\um\\%s",
+                     windowsKitPath,
+                     arch,
+                   )
                 ++ ";"
-                ++ "C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.20348.0\\ucrt\\x64"
+                ++ Printf.sprintf(
+                     "%s\\10\\Lib\\10.0.20348.0\\ucrt\\%s",
+                     windowsKitPath,
+                     arch,
+                   )
                 |> SandboxValue.v,
               ),
             )
@@ -82,15 +107,23 @@ let compilerPaths = globalPathVariable => {
             Some(
               SandboxEnvironment.Bindings.value(
                 "PATH",
-                Printf.sprintf("%s\\VC\\Tools\\MSVC\\14.40.33807\\bin\\HostX64\\x64;", productInstallationPath)
-                ++ "/bin;/usr/bin;" // This order is important for some reason. Otherwise, compiler fails to build with /entry:wmainCRTStartup is invalid option
+                Printf.sprintf(
+                  "%s\\VC\\Tools\\MSVC\\14.40.33807\\bin\\HostX64\\%s;",
+                  productInstallationPath,
+                  arch,
+                )
+                ++ "/bin;/usr/bin;"  // This order is important for some reason. Otherwise, compiler fails to build with /entry:wmainCRTStartup is invalid option
                 ++ b
                 ++ ";"
                 ++ windir
                 ++ ";"
                 ++ defaultPath
                 ++ ";"
-                ++ "C:\\Program Files (x86)\\Windows Kits\\10\\Bin\\10.0.20348.0\\x64"
+                ++ Printf.sprintf(
+                     "%s\\10\\Bin\\10.0.20348.0\\%s",
+                     windowsKitPath,
+                     arch,
+                   )
                 |> SandboxValue.v,
               ),
             );
