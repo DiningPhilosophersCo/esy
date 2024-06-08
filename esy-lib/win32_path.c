@@ -63,7 +63,7 @@ esy_move_file(value src, value dst) {
 CAMLprim value
 esy_win32_get_regkey(value path, value reg_val) {
 #ifndef WIN32
-  return caml_failwith("Called in a non-Windows environment"); 
+   caml_failwith("Called in a non-Windows environment"); 
 #else
     size_t chars_converted;
     const char* c_path = String_val(path);
