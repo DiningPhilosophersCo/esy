@@ -155,7 +155,8 @@ let compilerPaths = globalPathVariable => {
                 b
                 ++ ";"
                 ++ Printf.sprintf(
-                     "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.40.33807\\lib\\%s",
+                     "%s\\VC\\Tools\\MSVC\\14.40.33807\\lib\\%s",
+                     productInstallationPath,
                      arch,
                    )
                 ++ ";"
