@@ -101,15 +101,22 @@ let compilerPaths = globalPathVariable => {
   Esy_logs.app(m =>
     m("Windows Kit product version: %s", windowsKitProductVersion)
   );
-  let vcvarsAllPath = Path.(v(productInstallationPath) / "VC" / "Auxiliary" / "Build" / "vcvars64.bat");
+  let vcvarsAllPath =
+    Path.(
+      v(productInstallationPath)
+      / "VC"
+      / "Auxiliary"
+      / "Build"
+      / "vcvars64.bat"
+    );
   let cmd =
     Bos.Cmd.(
       v(Path.show(vcvarsAllPath))
-    /* v("C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat") */
+      /* v("C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat") */
       /* % arch */
       /* % "uwp" */
       /* % "10.0.20348.0" */
-   /* % windowsKitProductVersion */
+      /* % windowsKitProductVersion */
       % "&&"
       % "set"
     );
@@ -127,11 +134,20 @@ let compilerPaths = globalPathVariable => {
                 a,
                 b
                 ++ ";"
-                ++ windowsKitPath ++ "Include\\" ++ windowsKitProductVersion ++ "\\ucrt"
+                ++ windowsKitPath
+                ++ "Include\\"
+                ++ windowsKitProductVersion
+                ++ "\\ucrt"
                 ++ ";"
-                ++ windowsKitPath ++ "Include\\" ++ windowsKitProductVersion ++ "\\um"
+                ++ windowsKitPath
+                ++ "Include\\"
+                ++ windowsKitProductVersion
+                ++ "\\um"
                 ++ ";"
-                ++ windowsKitPath ++ "Include\\" ++ windowsKitProductVersion ++ "\\shared"
+                ++ windowsKitPath
+                ++ "Include\\"
+                ++ windowsKitProductVersion
+                ++ "\\shared"
                 |> SandboxValue.v,
               ),
             )
@@ -142,11 +158,21 @@ let compilerPaths = globalPathVariable => {
                 a,
                 b
                 ++ ";"
-                ++ productInstallationPath ++ "\\VC\\Tools\\MSVC\\14.40.33807\\lib\\" ++ arch
+                ++ productInstallationPath
+                ++ "\\VC\\Tools\\MSVC\\14.40.33807\\lib\\"
+                ++ arch
                 ++ ";"
-                ++ windowsKitPath ++ "Lib\\" ++ windowsKitProductVersion ++ "\\um\\" ++ arch
+                ++ windowsKitPath
+                ++ "Lib\\"
+                ++ windowsKitProductVersion
+                ++ "\\um\\"
+                ++ arch
                 ++ ";"
-                ++ windowsKitPath ++ "Lib\\" ++ windowsKitProductVersion ++ "\\ucrt\\" ++ arch
+                ++ windowsKitPath
+                ++ "Lib\\"
+                ++ windowsKitProductVersion
+                ++ "\\ucrt\\"
+                ++ arch
                 |> SandboxValue.v,
               ),
             )
@@ -162,25 +188,29 @@ let compilerPaths = globalPathVariable => {
               };
             let windir = Sys.getenv("WINDIR") ++ "/System32";
             let windir = Path.normalizePathSepOfFilename(windir);
-            let path = productInstallationPath
-            ++ "\\VC\\Tools\\MSVC\\14.40.33807\\bin\\"
-            ++ hostArchFolder
-            ++ "\\"
-            ++ arch
-            ++ ";"
-                ++ "/bin;/usr/bin;"  // This order is important for some reason. Otherwise, compiler fails to build with /entry:wmainCRTStartup is invalid option
-                ++ b
-                ++ ";"
-                ++ windir
-                ++ ";"
-                ++ defaultPath
-                ++ ";"
-                ++ windowsKitPath ++ "Bin\\" ++ windowsKitProductVersion ++ "\\" ++ arch;
+            let path =
+              productInstallationPath
+              ++ "\\VC\\Tools\\MSVC\\14.40.33807\\bin\\"
+              ++ hostArchFolder
+              ++ "\\"
+              ++ arch
+              ++ ";"
+              ++ "/bin;/usr/bin;"  // This order is important for some reason. Otherwise, compiler fails to build with /entry:wmainCRTStartup is invalid option
+              ++ b
+              ++ ";"
+              ++ windir
+              ++ ";"
+              ++ defaultPath
+              ++ ";"
+              ++ windowsKitPath
+              ++ "Bin\\"
+              ++ windowsKitProductVersion
+              ++ "\\"
+              ++ arch;
             Some(
               SandboxEnvironment.Bindings.value(
                 "PATH",
-              path
-                |> SandboxValue.v,
+                path |> SandboxValue.v,
               ),
             );
           | _ => None
