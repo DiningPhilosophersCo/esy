@@ -1,12 +1,15 @@
 module SandboxValue = EsyBuildPackage.Config.Value;
 module SandboxEnvironment = EsyBuildPackage.Config.Environment;
 
+let getSDK = () => {
 let productInstallationPath = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools";
 let windowsKitPath = "C:\\Program Files (x86)\\Windows Kits";
 let arch = "x64";
 let hostArchFolder = "HostX64";
 let windowsVersion = "10";
 let windowsKitProductVersion = "10.0.20348.0";
+  (productInstallationPath, windowsKitPath, arch, hostArchFolder, windowsVersion, windowsKitProductVersion);
+  };
 let compilerPaths = globalPathVariable => {
   open Run.Syntax;
   /*
@@ -24,6 +27,7 @@ let compilerPaths = globalPathVariable => {
        % "`\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat`\" x64 && set"
 
    */
+  let (productInstallationPath, windowsKitPath, arch, hostArchFolder, windowsVersion, windowsKitProductVersion) = getSDK();
   Esy_logs.app(m => m("Visual Studio production installation path: %s", productInstallationPath));
   Esy_logs.app(m => m("Windows Kits: %s", windowsKitPath));
   Esy_logs.app(m => m("Windows Version: %s", windowsVersion));
