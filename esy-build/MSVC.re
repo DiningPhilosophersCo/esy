@@ -40,17 +40,18 @@ let getSDK = () => {
 
   Esy_logs.app(m => m("Picking: %s", StringMap.get("productId", product)));
   let productInstallationPath = StringMap.get("installationPath", product);
-  let windowsKitPath = "C:\\Program Files (x86)\\Windows Kits";
+  // For ref,
+  // Get-ItemProperty -path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v10.0"
+  let windowsKitPath = System.getRegistryKey("SOFTWARE\\WOW6432Node\\Microsoft\\Microsoft SDKs\\Windows\\v10.0", "InstallationFolder");
   let arch = "x64";
   let hostArchFolder = "HostX64";
-  let windowsVersion = "10";
-  let windowsKitProductVersion = "10.0.20348.0";
+  let windowsKitProductVersion =
+    System.getRegistryKey("SOFTWARE\\WOW6432Node\\Microsoft\\Microsoft SDKs\\Windows\\v10.0", "ProductVersion");
   Ok((
     productInstallationPath,
     windowsKitPath,
     arch,
     hostArchFolder,
-    windowsVersion,
     windowsKitProductVersion,
   ));
 };
@@ -77,7 +78,6 @@ let compilerPaths = globalPathVariable => {
     windowsKitPath,
     arch,
     hostArchFolder,
-    windowsVersion,
     windowsKitProductVersion,
   ) =
     getSDK();
@@ -88,7 +88,6 @@ let compilerPaths = globalPathVariable => {
     )
   );
   Esy_logs.app(m => m("Windows Kits: %s", windowsKitPath));
-  Esy_logs.app(m => m("Windows Version: %s", windowsVersion));
   Esy_logs.app(m =>
     m("Windows Kit product version: %s", windowsKitProductVersion)
   );
@@ -121,23 +120,20 @@ let compilerPaths = globalPathVariable => {
                 b
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\%s\\Include\\%s\\ucrt",
+                     "%s\\Include\\%s\\ucrt",
                      windowsKitPath,
-                     windowsVersion,
                      windowsKitProductVersion,
                    )
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\%s\\Include\\%s\\um",
+                     "%s\\Include\\%s\\um",
                      windowsKitPath,
-                     windowsVersion,
                      windowsKitProductVersion,
                    )
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\%s\\Include\\%s\\shared",
+                     "%s\\Include\\%s\\shared",
                      windowsKitPath,
-                     windowsVersion,
                      windowsKitProductVersion,
                    )
                 |> SandboxValue.v,
@@ -156,17 +152,15 @@ let compilerPaths = globalPathVariable => {
                    )
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\%s\\Lib\\%s\\um\\%s",
+                     "%s\\Lib\\%s\\um\\%s",
                      windowsKitPath,
-                     windowsVersion,
                      windowsKitProductVersion,
                      arch,
                    )
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\%s\\Lib\\%s\\ucrt\\%s",
+                     "%s\\Lib\\%s\\ucrt\\%s",
                      windowsKitPath,
-                     windowsVersion,
                      windowsKitProductVersion,
                      arch,
                    )
@@ -202,9 +196,8 @@ let compilerPaths = globalPathVariable => {
                 ++ defaultPath
                 ++ ";"
                 ++ Printf.sprintf(
-                     "%s\\%s\\Bin\\%s\\%s",
+                     "%s\\Bin\\%s\\%s",
                      windowsKitPath,
-                     windowsVersion,
                      windowsKitProductVersion,
                      arch,
                    )

@@ -91,10 +91,33 @@ esy_win32_get_regkey(value path, value reg_val) {
             &hKey);
 
     if (code != ERROR_SUCCESS) {
+      DWORD dwError = GetLastError();
+      char msg[1024];
+        LPVOID lpMsgBuf;
+        DWORD dwChars = FormatMessageA(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+            NULL,
+            dwError,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+            (LPSTR) &lpMsgBuf,
+            0,
+            NULL
+        );
+        if (dwChars != 0) {
+            // Print the error message with formatting
+	  sprintf(msg, "Error opening registry key: %s.\n Reason: %s (Error code: %d)\n", c_path, (LPSTR)lpMsgBuf, dwError);
+
+            // Free the allocated buffer
+            LocalFree(lpMsgBuf);
+        } else {
+            // Handle the case where FormatMessageW fails
+	  sprintf(msg, "Failed to format error message (Error code: %d)\n", dwError);
+        }
+
+      /* DWORD_PTR pArgs[] = { (DWORD_PTR) wc_path }; */
+      /* FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,  L"Failed to open registry key with path: %1!*.*s!", 0, 0, msg, 1024, (va_list*)pArgs); */
       free(wc_path);
       free(wc_reg_val);
-      char msg[1024];
-      sprintf(msg, "Failed to open registry key with path: %s", c_path);
       caml_failwith(msg);
     }
 
