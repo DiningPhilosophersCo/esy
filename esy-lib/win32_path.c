@@ -124,9 +124,9 @@ esy_win32_get_regkey(value path, value reg_val) {
     const int value_bytes_length = 1024;
     BYTE *buffer = (BYTE*)LocalAlloc(LPTR, value_bytes_length);
     DWORD length = {value_bytes_length};
-    code = RegQueryValueExW(
+    code = RegQueryValueExA(
             hKey,
-	    wc_reg_val,
+	    c_reg_val,
             0,
             0,
             buffer,
@@ -139,7 +139,7 @@ esy_win32_get_regkey(value path, value reg_val) {
       caml_failwith(msg);
     }
 
-    return caml_alloc_initialized_string(length, buffer);
+    return caml_alloc_initialized_string(strlen(buffer), buffer);
 
 #endif
 }
