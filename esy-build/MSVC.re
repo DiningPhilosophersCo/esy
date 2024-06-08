@@ -1,7 +1,106 @@
 module SandboxValue = EsyBuildPackage.Config.Value;
 module SandboxEnvironment = EsyBuildPackage.Config.Environment;
 
+let vsWhereOutput = {|instanceId: 48b20715
+installDate: 24-05-2024 18:57:19
+installationName: VisualStudio/17.10.0+34916.146
+installationPath: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools
+installationVersion: 17.10.34916.146
+productId: Microsoft.VisualStudio.Product.BuildTools
+productPath: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\LaunchDevCmd.bat
+state: 4294967295
+isComplete: 1
+isLaunchable: 1
+isPrerelease: 0
+isRebootRequired: 0
+displayName: Visual Studio Build Tools 2022
+description: The Visual Studio Build Tools allows you to build native and managed MSBuild-based applications without requiring the Visual Studio IDE. There are options to install the Visual C++ compilers and libraries, MFC, ATL, and C++/CLI support.
+channelId: VisualStudio.17.Release
+channelUri: https://aka.ms/vs/17/release/channel
+enginePath: C:\Program Files (x86)\Microsoft Visual Studio\Installer\resources\app\ServiceHub\Services\Microsoft.VisualStudio.Setup.Service
+installChannelUri: https://aka.ms/vs/17/release/213061705_1612541648/channel
+installedChannelId: VisualStudio.17.Release
+installedChannelUri: https://aka.ms/vs/17/release/channel
+releaseNotes: https://docs.microsoft.com/en-us/visualstudio/releases/2022/release-notes-v17.10#17.10.0
+resolvedInstallationPath: C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools
+thirdPartyNotices: https://go.microsoft.com/fwlink/?LinkId=661288
+updateDate: 2024-05-24T13:27:19.3339249Z
+catalog_buildBranch: d17.10
+catalog_buildVersion: 17.10.34916.146
+catalog_id: VisualStudio/17.10.0+34916.146
+catalog_localBuild: build-lab
+catalog_manifestName: VisualStudio
+catalog_manifestType: installer
+catalog_productDisplayVersion: 17.10.0
+catalog_productLine: Dev17
+catalog_productLineVersion: 2022
+catalog_productMilestone: RTW
+catalog_productMilestoneIsPreRelease: False
+catalog_productName: Visual Studio
+catalog_productPatchVersion: 0
+catalog_productPreReleaseMilestoneSuffix: 8.0
+catalog_productSemanticVersion: 17.10.0+34916.146
+catalog_requiredEngineVersion: 3.10.2154.60269
+properties_campaignId:
+properties_channelManifestId: VisualStudio.17.Release/17.10.0+34916.146
+properties_includeRecommended: 0
+properties_nickname:
+properties_setupEngineFilePath: C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe
+
+instanceId: df4d7c9d
+installDate: 24-05-2024 19:58:14
+installationName: VisualStudio/17.10.0+34916.146
+installationPath: C:\Program Files\Microsoft Visual Studio\2022\Community
+installationVersion: 17.10.34916.146
+productId: Microsoft.VisualStudio.Product.Community
+productPath: C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe
+state: 4294967295
+isComplete: 1
+isLaunchable: 1
+isPrerelease: 0
+isRebootRequired: 0
+displayName: Visual Studio Community 2022
+description: Powerful IDE, free for students, open-source contributors, and individuals
+channelId: VisualStudio.17.Release
+channelUri: https://aka.ms/vs/17/release/channel
+enginePath: C:\Program Files (x86)\Microsoft Visual Studio\Installer\resources\app\ServiceHub\Services\Microsoft.VisualStudio.Setup.Service
+installedChannelId: VisualStudio.17.Release
+installedChannelUri: https://aka.ms/vs/17/release/channel
+releaseNotes: https://docs.microsoft.com/en-us/visualstudio/releases/2022/release-notes-v17.10#17.10.0
+resolvedInstallationPath: C:\Program Files\Microsoft Visual Studio\2022\Community
+thirdPartyNotices: https://go.microsoft.com/fwlink/?LinkId=661288
+updateDate: 2024-05-24T14:28:14.5948276Z
+catalog_buildBranch: d17.10
+catalog_buildVersion: 17.10.34916.146
+catalog_id: VisualStudio/17.10.0+34916.146
+catalog_localBuild: build-lab
+catalog_manifestName: VisualStudio
+catalog_manifestType: installer
+catalog_productDisplayVersion: 17.10.0
+catalog_productLine: Dev17
+catalog_productLineVersion: 2022
+catalog_productMilestone: RTW
+catalog_productMilestoneIsPreRelease: False
+catalog_productName: Visual Studio
+catalog_productPatchVersion: 0
+catalog_productPreReleaseMilestoneSuffix: 8.0
+catalog_productSemanticVersion: 17.10.0+34916.146
+catalog_requiredEngineVersion: 3.10.2154.60269
+properties_campaignId:
+properties_channelManifestId: VisualStudio.17.Release/17.10.0+34916.146
+properties_includeRecommended: 1
+properties_nickname: 2
+properties_setupEngineFilePath: C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe
+|};
+
+
 let getSDK = () => {
+  let products = vsWhereOutput
+  |> Astring.String.cuts(~sep="\n\n")
+  |> List.map(~f=product => product |> Astring.String.cuts(~sep="\n") |> List.map(~f=Astring.String.cut(~sep=": ")));
+
+              
+                                                                               
 let productInstallationPath = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools";
 let windowsKitPath = "C:\\Program Files (x86)\\Windows Kits";
 let arch = "x64";
@@ -10,6 +109,7 @@ let windowsVersion = "10";
 let windowsKitProductVersion = "10.0.20348.0";
   (productInstallationPath, windowsKitPath, arch, hostArchFolder, windowsVersion, windowsKitProductVersion);
   };
+
 let compilerPaths = globalPathVariable => {
   open Run.Syntax;
   /*
