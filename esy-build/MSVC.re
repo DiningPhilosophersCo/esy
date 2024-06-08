@@ -20,7 +20,7 @@ let getSDK = () => {
     |> Astring.String.cuts(~sep="\n\n")
     |> List.map(~f=product =>
          product
-         |> Astring.String.cuts(~sep="\n")
+         |> Astring.String.cuts(~sep="\r\n")
          |> List.filter_map(~f=line => line |> Astring.String.cut(~sep=": "))
          |> StringMap.of_list
        );
@@ -55,6 +55,8 @@ let getSDK = () => {
       "SOFTWARE\\WOW6432Node\\Microsoft\\Microsoft SDKs\\Windows\\v10.0",
       "ProductVersion",
     );
+  ////// !! HACK Not sure why this registry doesn't have the .0 already
+  let windowsKitProductVersion = windowsKitProductVersion ++ ".0";
   Ok((
     productInstallationPath,
     windowsKitPath,
@@ -99,17 +101,15 @@ let compilerPaths = globalPathVariable => {
   Esy_logs.app(m =>
     m("Windows Kit product version: %s", windowsKitProductVersion)
   );
+  let vcvarsAllPath = Path.(v(productInstallationPath) / "VC" / "Auxiliary" / "Build" / "vcvars64.bat");
   let cmd =
     Bos.Cmd.(
-      v(
-        Printf.sprintf(
-          "%s\\VC\\Auxiliary\\Build\\vcvarsall.bat",
-          productInstallationPath,
-        ),
-      )
-      % arch
-      % "uwp"
-      % windowsKitProductVersion
+      v(Path.show(vcvarsAllPath))
+    /* v("C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat") */
+      /* % arch */
+      /* % "uwp" */
+      /* % "10.0.20348.0" */
+   /* % windowsKitProductVersion */
       % "&&"
       % "set"
     );
@@ -127,23 +127,11 @@ let compilerPaths = globalPathVariable => {
                 a,
                 b
                 ++ ";"
-                ++ Printf.sprintf(
-                     "%s\\Include\\%s\\ucrt",
-                     windowsKitPath,
-                     windowsKitProductVersion,
-                   )
+                ++ windowsKitPath ++ "Include\\" ++ windowsKitProductVersion ++ "\\ucrt"
                 ++ ";"
-                ++ Printf.sprintf(
-                     "%s\\Include\\%s\\um",
-                     windowsKitPath,
-                     windowsKitProductVersion,
-                   )
+                ++ windowsKitPath ++ "Include\\" ++ windowsKitProductVersion ++ "\\um"
                 ++ ";"
-                ++ Printf.sprintf(
-                     "%s\\Include\\%s\\shared",
-                     windowsKitPath,
-                     windowsKitProductVersion,
-                   )
+                ++ windowsKitPath ++ "Include\\" ++ windowsKitProductVersion ++ "\\shared"
                 |> SandboxValue.v,
               ),
             )
@@ -154,25 +142,11 @@ let compilerPaths = globalPathVariable => {
                 a,
                 b
                 ++ ";"
-                ++ Printf.sprintf(
-                     "%s\\VC\\Tools\\MSVC\\14.40.33807\\lib\\%s",
-                     productInstallationPath,
-                     arch,
-                   )
+                ++ productInstallationPath ++ "\\VC\\Tools\\MSVC\\14.40.33807\\lib\\" ++ arch
                 ++ ";"
-                ++ Printf.sprintf(
-                     "%s\\Lib\\%s\\um\\%s",
-                     windowsKitPath,
-                     windowsKitProductVersion,
-                     arch,
-                   )
+                ++ windowsKitPath ++ "Lib\\" ++ windowsKitProductVersion ++ "\\um\\" ++ arch
                 ++ ";"
-                ++ Printf.sprintf(
-                     "%s\\Lib\\%s\\ucrt\\%s",
-                     windowsKitPath,
-                     windowsKitProductVersion,
-                     arch,
-                   )
+                ++ windowsKitPath ++ "Lib\\" ++ windowsKitProductVersion ++ "\\ucrt\\" ++ arch
                 |> SandboxValue.v,
               ),
             )
@@ -188,15 +162,12 @@ let compilerPaths = globalPathVariable => {
               };
             let windir = Sys.getenv("WINDIR") ++ "/System32";
             let windir = Path.normalizePathSepOfFilename(windir);
-            Some(
-              SandboxEnvironment.Bindings.value(
-                "PATH",
-                Printf.sprintf(
-                  "%s\\VC\\Tools\\MSVC\\14.40.33807\\bin\\%s\\%s;",
-                  productInstallationPath,
-                  hostArchFolder,
-                  arch,
-                )
+            let path = productInstallationPath
+            ++ "\\VC\\Tools\\MSVC\\14.40.33807\\bin\\"
+            ++ hostArchFolder
+            ++ "\\"
+            ++ arch
+            ++ ";"
                 ++ "/bin;/usr/bin;"  // This order is important for some reason. Otherwise, compiler fails to build with /entry:wmainCRTStartup is invalid option
                 ++ b
                 ++ ";"
@@ -204,12 +175,11 @@ let compilerPaths = globalPathVariable => {
                 ++ ";"
                 ++ defaultPath
                 ++ ";"
-                ++ Printf.sprintf(
-                     "%s\\Bin\\%s\\%s",
-                     windowsKitPath,
-                     windowsKitProductVersion,
-                     arch,
-                   )
+                ++ windowsKitPath ++ "Bin\\" ++ windowsKitProductVersion ++ "\\" ++ arch;
+            Some(
+              SandboxEnvironment.Bindings.value(
+                "PATH",
+              path
                 |> SandboxValue.v,
               ),
             );
