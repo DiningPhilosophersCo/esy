@@ -93,22 +93,48 @@ properties_nickname: 2
 properties_setupEngineFilePath: C:\Program Files (x86)\Microsoft Visual Studio\Installer\setup.exe
 |};
 
-
 let getSDK = () => {
-  let products = vsWhereOutput
-  |> Astring.String.cuts(~sep="\n\n")
-  |> List.map(~f=product => product |> Astring.String.cuts(~sep="\n") |> List.map(~f=Astring.String.cut(~sep=": ")));
+  open Run.Syntax;
+  let products =
+    vsWhereOutput
+    |> Astring.String.cuts(~sep="\n\n")
+    |> List.map(~f=product =>
+         product
+         |> Astring.String.cuts(~sep="\n")
+         |> List.filter_map(~f=line => line |> Astring.String.cut(~sep=": "))
+         |> StringMap.of_list
+       );
 
-              
-                                                                               
-let productInstallationPath = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools";
-let windowsKitPath = "C:\\Program Files (x86)\\Windows Kits";
-let arch = "x64";
-let hostArchFolder = "HostX64";
-let windowsVersion = "10";
-let windowsKitProductVersion = "10.0.20348.0";
-  (productInstallationPath, windowsKitPath, arch, hostArchFolder, windowsVersion, windowsKitProductVersion);
-  };
+  let* product =
+    switch (products) {
+    | [] => Run.error("No Visual Studion installation found")
+    | [product] => Run.return(product)
+    | products =>
+      Esy_logs.app(m => m("Found the following products"));
+      products
+      |> List.iter(~f=product => {
+           let productId = StringMap.get("productId", product);
+           Esy_logs.app(m => m("%s", productId));
+         });
+      products |> List.hd |> Run.return;
+    };
+
+  Esy_logs.app(m => m("Picking: %s", StringMap.get("productId", product)));
+  let productInstallationPath = StringMap.get("installationPath", product);
+  let windowsKitPath = "C:\\Program Files (x86)\\Windows Kits";
+  let arch = "x64";
+  let hostArchFolder = "HostX64";
+  let windowsVersion = "10";
+  let windowsKitProductVersion = "10.0.20348.0";
+  Ok((
+    productInstallationPath,
+    windowsKitPath,
+    arch,
+    hostArchFolder,
+    windowsVersion,
+    windowsKitProductVersion,
+  ));
+};
 
 let compilerPaths = globalPathVariable => {
   open Run.Syntax;
@@ -127,11 +153,26 @@ let compilerPaths = globalPathVariable => {
        % "`\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat`\" x64 && set"
 
    */
-  let (productInstallationPath, windowsKitPath, arch, hostArchFolder, windowsVersion, windowsKitProductVersion) = getSDK();
-  Esy_logs.app(m => m("Visual Studio production installation path: %s", productInstallationPath));
+  let* (
+    productInstallationPath,
+    windowsKitPath,
+    arch,
+    hostArchFolder,
+    windowsVersion,
+    windowsKitProductVersion,
+  ) =
+    getSDK();
+  Esy_logs.app(m =>
+    m(
+      "Visual Studio production installation path: %s",
+      productInstallationPath,
+    )
+  );
   Esy_logs.app(m => m("Windows Kits: %s", windowsKitPath));
   Esy_logs.app(m => m("Windows Version: %s", windowsVersion));
-  Esy_logs.app(m => m("Windows Kit product version: %s", windowsKitProductVersion));
+  Esy_logs.app(m =>
+    m("Windows Kit product version: %s", windowsKitProductVersion)
+  );
   let cmd =
     Bos.Cmd.(
       v(
