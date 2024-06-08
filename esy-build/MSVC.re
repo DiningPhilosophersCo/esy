@@ -6,14 +6,15 @@ let getSDK = () => {
   let* (vsWhereOutput, _run_status) =
     Bos.Cmd.(
       v(
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe",
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe",
       )
       % "-products"
       % "*"
       % "/nologo"
-    ) |> Bos.OS.Cmd.run_out
+    )
+    |> Bos.OS.Cmd.run_out
     |> Bos.OS.Cmd.out_string
-  |> Run.ofBosError
+    |> Run.ofBosError;
   let products =
     vsWhereOutput
     |> Astring.String.cuts(~sep="\n\n")
@@ -42,11 +43,18 @@ let getSDK = () => {
   let productInstallationPath = StringMap.get("installationPath", product);
   // For ref,
   // Get-ItemProperty -path "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v10.0"
-  let windowsKitPath = System.getRegistryKey("SOFTWARE\\WOW6432Node\\Microsoft\\Microsoft SDKs\\Windows\\v10.0", "InstallationFolder");
+  let windowsKitPath =
+    System.getRegistryKey(
+      "SOFTWARE\\WOW6432Node\\Microsoft\\Microsoft SDKs\\Windows\\v10.0",
+      "InstallationFolder",
+    );
   let arch = "x64";
   let hostArchFolder = "HostX64";
   let windowsKitProductVersion =
-    System.getRegistryKey("SOFTWARE\\WOW6432Node\\Microsoft\\Microsoft SDKs\\Windows\\v10.0", "ProductVersion");
+    System.getRegistryKey(
+      "SOFTWARE\\WOW6432Node\\Microsoft\\Microsoft SDKs\\Windows\\v10.0",
+      "ProductVersion",
+    );
   Ok((
     productInstallationPath,
     windowsKitPath,
