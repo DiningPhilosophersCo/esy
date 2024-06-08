@@ -24,6 +24,10 @@ let compilerPaths = globalPathVariable => {
        % "`\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Auxiliary\\Build\\vcvarsall.bat`\" x64 && set"
 
    */
+  Esy_logs.app(m => m("Visual Studio production installation path: %s", productInstallationPath));
+  Esy_logs.app(m => m("Windows Kits: %s", windowsKitPath));
+  Esy_logs.app(m => m("Windows Version: %s", windowsVersion));
+  Esy_logs.app(m => m("Windows Kit product version: %s", windowsKitProductVersion));
   let cmd =
     Bos.Cmd.(
       v(
