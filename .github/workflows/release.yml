@@ -21,6 +21,7 @@ jobs:
         with:
           fetch-depth: 1000
           fetch-tags: true
+          submodules: true
       - run: sh ./esy-version/version.sh --reason > ./esy-version/EsyVersion.re
         name: "Generate EsyVersion.re"
       - name: Install esy
