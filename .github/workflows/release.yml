@@ -56,7 +56,7 @@ jobs:
           bundle-npm-artifacts-mode: true
           postinstall-js: .ci/release-postinstall.js
       - name: Publish to NPM registry
-        working-directory: _release
+        working-directory: _npm-release
         if: github.ref == 'refs/heads/prometheansacrifice/msvc'
         run: npm publish --access=public .
         env:
