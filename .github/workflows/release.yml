@@ -57,7 +57,7 @@ jobs:
           postinstall-js: .ci/release-postinstall.js
       - name: Publish to NPM registry
         working-directory: _npm-release
-        if: github.ref == 'refs/heads/prometheansacrifice/msvc'
+        # if: github.ref == 'refs/heads/prometheansacrifice/msvc'
         run: npm publish --access=public .
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
