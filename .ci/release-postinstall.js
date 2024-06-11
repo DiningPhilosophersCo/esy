@@ -121,7 +121,7 @@ function copyFileSync(sourcePath, destPath) {
 }
 
 var copyPlatformBinaries = (platformPath) => {
-  var platformBuildPath = path.join(__dirname, 'platform-' + platformPath);
+  var platformBuildPath = path.join(__dirname, 'platform-esy-npm-release-' + platformPath);
 
   let foldersToCopy, binariesToCopy;
 
@@ -172,7 +172,7 @@ switch (platform) {
       process.exit(1);
     }
 
-    copyPlatformBinaries('windows-x64');
+    copyPlatformBinaries('win32-x64');
     console.log('Installing native compiler toolchain for Windows...');
     cp.execSync(
       `npm install @prometheansacrifice/esy-bash@0.1.0-dev-2a4a4dc324edda87b93b39c98beca80aa2acfb42 --prefix "${__dirname}"`,
@@ -181,11 +181,11 @@ switch (platform) {
     require('./esyInstallRelease');
     break;
   case 'linux':
-    copyPlatformBinaries(platform);
+    copyPlatformBinaries(`${platform}-${platformArch}`);
     // Statically linked binaries dont need postinstall scripts
     break;
   case 'darwin':
-    copyPlatformBinaries(platform + (process.arch === 'x64' ? '' : '-arm64'));
+    copyPlatformBinaries(`${platform}-${platformArch}`);
     require('./esyInstallRelease');
     break;
   default:
