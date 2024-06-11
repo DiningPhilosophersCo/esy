@@ -57,7 +57,7 @@ jobs:
           postinstall-js: .ci/release-postinstall.js
 
       - run: |
-          NPM_RELEASE_FOLDER=_npm-release
+          $env:NPM_RELEASE_FOLDER=_npm-release
           node scripts/set-package-version.js ./$NPM_RELEASE_FOLDER/package.json > ./$NPM_RELEASE_FOLDER/package.json.tmp
           mv -Force ./$NPM_RELEASE_FOLDER/package.json.tmp ./$NPM_RELEASE_FOLDER/package.json
         name: "Set NPM package version"
