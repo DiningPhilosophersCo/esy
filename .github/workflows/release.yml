@@ -49,11 +49,12 @@ jobs:
         with:
           fetch-depth: 100
           fetch-tags: true
-      - uses: esy/github-action@master
+      - uses: esy/github-action@prometheansacrifice/npm-release
         with:
           source-cache-key: 20240515-1
           cache-key: ${{ hashFiles('esy.lock/index.json') }}-20240515-1
           bundle-npm-artifacts-mode: true
+          postinstall-js: .ci/release-postinstall.js
 
       - run: |
           NPM_RELEASE_FOLDER=_npm-release
