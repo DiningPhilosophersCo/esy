@@ -55,14 +55,6 @@ jobs:
           cache-key: ${{ hashFiles('esy.lock/index.json') }}-20240515-1
           bundle-npm-artifacts-mode: true
           postinstall-js: .ci/release-postinstall.js
-
-      - run: |
-          $NPM_RELEASE_FOLDER = '_npm-release'
-          node scripts/set-package-version.js ./$NPM_RELEASE_FOLDER/package.json > ./$NPM_RELEASE_FOLDER/package.json.tmp
-          mv -Force ./$NPM_RELEASE_FOLDER/package.json.tmp ./$NPM_RELEASE_FOLDER/package.json
-        name: "Set NPM package version"
-        shell: "pwsh"
-
       - name: Publish to NPM registry
         working-directory: _release
         if: github.ref == 'refs/heads/prometheansacrifice/msvc'
