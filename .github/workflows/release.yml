@@ -61,6 +61,7 @@ jobs:
           node scripts/set-package-version.js ./$NPM_RELEASE_FOLDER/package.json > ./$NPM_RELEASE_FOLDER/package.json.tmp
           mv -Force ./$NPM_RELEASE_FOLDER/package.json.tmp ./$NPM_RELEASE_FOLDER/package.json
         name: "Set NPM package version"
+        shell: "pwsh"
 
       - name: Publish to NPM registry
         working-directory: _release
