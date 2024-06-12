@@ -68,7 +68,10 @@ let toEsyBashCommand = (~env=None, cmd) => {
   | Windows =>
     let commands = Bos.Cmd.to_list(cmd);
     let esyBashPath = getEsyBashPath();
-    Bos.Cmd.of_list([Path.show(esyBashPath), "--msvc", ...environmentFilePath] @ ["--", ...commands]);
+    Bos.Cmd.of_list(
+      [Path.show(esyBashPath), "--msvc", ...environmentFilePath]
+      @ ["--", ...commands],
+    );
   | _ => cmd
   };
 };
