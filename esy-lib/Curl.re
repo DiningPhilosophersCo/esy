@@ -113,7 +113,8 @@ let runCurl = cmd => {
     };
   };
 
-  try%lwt(EsyBashLwt.with_process_full(cmd, f)) {
+  let tl = Cmd.getToolAndLine(cmd);
+  try%lwt(Lwt_process.with_process_full(tl, f)) {
   | [@implicit_arity] Unix.Unix_error(err, _, _) =>
     let msg = Unix.error_message(err);
     RunAsync.error(msg);
@@ -199,7 +200,7 @@ let get = (~accept=?, url) => {
 
 let download = (~output, url) => {
   open RunAsync.Syntax;
-  let output = EsyBash.normalizePathForCygwin(Path.show(output));
+  let output = output |> Path.show;
   let cmd =
     Cmd.(
       v("curl")
