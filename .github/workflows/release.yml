@@ -50,7 +50,7 @@ jobs:
         with:
           fetch-depth: 100
           fetch-tags: true
-      - uses: esy/github-action@prometheansacrifice/npm-release
+      - uses: esy/github-action@master
         with:
           source-cache-key: 20240515-1
           cache-key: ${{ hashFiles('esy.lock/index.json') }}-20240515-1
