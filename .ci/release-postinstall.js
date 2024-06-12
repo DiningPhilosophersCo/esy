@@ -173,11 +173,16 @@ switch (platform) {
     }
 
     copyPlatformBinaries('win32-x64');
+  // TODO. This only prevents re-installation of cygwin. ideally, even copyPlatformBinaries could be avoided if
+  // esy installation was cached.
+  const esyBashPackage = "@prometheansacrifice/esy-bash";
+  if (!fs.existsSync(`${__dirname}/${esyBashPackage}`)) {
     console.log('Installing native compiler toolchain for Windows...');
     cp.execSync(
-      `npm install @prometheansacrifice/esy-bash@0.1.0-dev-2a4a4dc324edda87b93b39c98beca80aa2acfb42 --prefix "${__dirname}"`,
+      `npm install ${esyBashPackage}@0.1.0-dev-2a4a4dc324edda87b93b39c98beca80aa2acfb42 --prefix "${__dirname}"`,
     );
     console.log('Native compiler toolchain installed successfully.');
+  }
     require('./esyInstallRelease');
     break;
   case 'linux':
