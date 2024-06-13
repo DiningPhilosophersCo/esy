@@ -2,6 +2,7 @@ type ref = string;
 type commit = string;
 type remote = string;
 
+let gitCommand = "git";
 let runGit = cmd => {
   let f = p => {
     let%lwt stdout = Lwt_io.read(p#stdout)
@@ -21,7 +22,8 @@ let runGit = cmd => {
     };
   };
 
-  try%lwt(EsyBashLwt.with_process_full(cmd, f)) {
+  let tl = Cmd.getToolAndLine(cmd);
+  try%lwt(Lwt_process.with_process_full(tl, f)) {
   | [@implicit_arity] Unix.Unix_error(err, _, _) =>
     let msg = Unix.error_message(err);
     RunAsync.error(msg);
@@ -31,8 +33,8 @@ let runGit = cmd => {
 
 let updateSubmodules = (~repo, ~config as configKVs=?, ()) => {
   open RunAsync.Syntax;
-  let repo = EsyBash.normalizePathForCygwin(Path.show(repo));
-  let cmd = Cmd.v("git");
+  let repo = Path.show(repo);
+  let cmd = Cmd.v(gitCommand);
   let cmd =
     switch (configKVs) {
     | Some([])
@@ -64,8 +66,8 @@ let clone = (~branch=?, ~config as configKVs=?, ~depth=?, ~dst, ~remote, ()) => 
       {
         open Cmd;
         open Result.Syntax;
-        let dest = EsyBash.normalizePathForCygwin(Path.show(dst));
-        let cmd = v("git");
+        let dest = Path.show(dst);
+        let cmd = v(gitCommand);
         let cmd =
           switch (configKVs) {
           | Some([])
@@ -105,12 +107,13 @@ let clone = (~branch=?, ~config as configKVs=?, ~depth=?, ~dst, ~remote, ()) => 
 };
 
 let revParse = (~repo, ~ref, ()) => {
-  let cmd = Cmd.(v("git") % "rev-parse" % "-C" % p(repo) % ref);
+  let cmd = Cmd.(v(gitCommand) % "rev-parse" % "-C" % p(repo) % ref);
   runGit(cmd);
 };
 
 let fetch = (~depth=?, ~dst, ~ref, ~remote, ()) => {
-  let cmd = Cmd.(v("git") % "-C" % Path.show(dst) % "fetch" % remote % ref);
+  let cmd =
+    Cmd.(v(gitCommand) % "-C" % Path.show(dst) % "fetch" % remote % ref);
   let cmd =
     switch (depth) {
     | Some(depth) => Cmd.(cmd % "--depth" % string_of_int(depth))
@@ -125,7 +128,7 @@ let pull =
   open RunAsync.Syntax;
   let cmd = {
     open Cmd;
-    let cmd = v("git") % "-C" % p(repo) % "pull";
+    let cmd = v(gitCommand) % "-C" % p(repo) % "pull";
     let cmd = ffOnly ? cmd % "--ff-only" : cmd;
 
     let cmd = force ? cmd % "--force" : cmd;
@@ -145,14 +148,14 @@ let pull =
 
 let checkout = (~ref, ~repo, ()) => {
   open RunAsync.Syntax;
-  let cmd = Cmd.(v("git") % "-C" % p(repo) % "checkout" % ref);
+  let cmd = Cmd.(v(gitCommand) % "-C" % p(repo) % "checkout" % ref);
   let* _ = runGit(cmd);
   return();
 };
 
 let lsRemote = (~config as configKVs=?, ~ref=?, ~remote, ()) => {
   open RunAsync.Syntax;
-  let cmd = Cmd.(v("git"));
+  let cmd = Cmd.(v(gitCommand));
   let cmd =
     switch (configKVs) {
     | Some([])
@@ -218,7 +221,7 @@ module ShallowClone = {
       | _ => []
       };
     let getLocalCommit = () => {
-      let remote = EsyBash.normalizePathForCygwin(Path.show(dst));
+      let remote = Path.show(dst);
       lsRemote(~remote, ~config=gitConfig, ());
     };
 

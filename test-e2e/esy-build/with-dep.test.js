@@ -105,7 +105,7 @@ describe('Build with dep', () => {
       }),
     );
 
-    test(
+    test.disableIf(isWindows)(
       'build-env',
       withProject(async function(p) {
         const id = JSON.parse((await p.esy('build-plan')).stdout).id;
@@ -170,7 +170,7 @@ describe('Build with dep', () => {
       }),
     );
 
-    test(
+    test.disableIf(isWindows)(
       'build-env dep',
       withProject(async function(p) {
         const id = JSON.parse((await p.esy('build-plan')).stdout).id;

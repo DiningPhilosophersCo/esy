@@ -59,7 +59,7 @@ let run = cmd => {
     };
   };
 
-  try%lwt(EsyBashLwt.with_process_full(cmd, f)) {
+  try%lwt(Lwt_process.with_process_full(Cmd.getToolAndLine(cmd), f)) {
   | [@implicit_arity] Unix.Unix_error(err, _, _) =>
     let msg = Unix.error_message(err);
     RunAsync.error(msg);
@@ -72,7 +72,7 @@ let fixFilePermissionsAfterUnTar = out => {
   Fs.traverse(
     ~f=
       (p, s) => {
-        let p = EsyBash.normalizePathForCygwin(Path.show(p));
+        let p = p |> Path.show // |> EsyBash.normalizePathForCygwin;
         try%lwt(
           switch (s.st_kind) {
           | Unix.S_DIR =>
@@ -95,8 +95,8 @@ let unpackWithTar = (~stripComponents=?, ~dst, filename) => {
       RunAsync.ofBosError(
         {
           open Result.Syntax;
-          let nf = EsyBash.normalizePathForCygwin(Path.show(filename));
-          let normalizedOut = EsyBash.normalizePathForCygwin(Path.show(out));
+          let nf = filename |> Path.show; //|> EsyBash.normalizePathForCygwin;
+          let normalizedOut = out |> Path.show; // |> EsyBash.normalizePathForCygwin(Path.show(out));
           return(Cmd.(v("tar") % "xf" % nf % "-C" % normalizedOut));
         },
       );
@@ -178,10 +178,10 @@ let create = (~filename, ~outpath=".", src) =>
   RunAsync.ofBosError(
     {
       open Result.Syntax;
-      let nf = EsyBash.normalizePathForCygwin(Path.show(filename));
-      let ns = EsyBash.normalizePathForCygwin(Path.show(src));
+      let nf = filename |> Path.show; // |> EsyBash.normalizePathForCygwin;
+      let ns = src |> Path.show; // |> EsyBash.normalizePathForCygwin;
       let cmd = Cmd.(v("tar") % "czf" % nf % "-C" % ns % outpath);
-      let* res = EsyBash.run(Cmd.toBosCmd(cmd));
+      let* res = cmd |> Cmd.toBosCmd |> Bos.OS.Cmd.run;
       return(res);
     },
   );

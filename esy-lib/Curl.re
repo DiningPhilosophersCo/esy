@@ -38,24 +38,74 @@ let runCurl = cmd => {
         RunAsync.return(Success(stdout))
       | Error(err) => Lwt.return(Error(err))
       }
-    | _ =>
+    | Unix.WEXITED(exitCode) =>
       switch (parseStdout(stdout)) {
-      | [@implicit_arity] Ok(_stdout, httpcode) when httpcode == 404 =>
+      | Ok((_stdout, httpcode)) when httpcode == 404 =>
         RunAsync.return(NotFound)
-      | [@implicit_arity] Ok(_stdout, httpcode) =>
+      | Ok((_stdout, httpcode)) =>
         RunAsync.errorf(
-          "@[<v>error running curl: %a:@\ncode: %i@\nstderr:@[<v 2>@\n%a@]@]",
+          "@[<v>error running curl: %a:@\nExit Code: %i@\nHTTP Code: %i@\nstderr:@[<v 2>@\n%a@]@]",
           Cmd.pp,
           cmd,
+          exitCode,
           httpcode,
           Fmt.lines,
           stderr,
         )
       | _ =>
         RunAsync.errorf(
-          "@[<v>error running curl: %a:@\nstderr:@[<v 2>@\n%a@]@]",
+          "@[<v>error running curl: %a:@@\nExit Code: %i\nstderr:@[<v 2>@\n%a@]@]",
           Cmd.pp,
           cmd,
+          exitCode,
+          Fmt.lines,
+          stderr,
+        )
+      }
+    | Unix.WSIGNALED(signal) =>
+      switch (parseStdout(stdout)) {
+      | Ok((_stdout, httpcode)) when httpcode == 404 =>
+        RunAsync.return(NotFound)
+      | Ok((_stdout, httpcode)) =>
+        RunAsync.errorf(
+          "@[<v>error running curl: %a:@\nProcess was signalled. Signal Code: %i@\nHTTP Code: %i@\nstderr:@[<v 2>@\n%a@]@]",
+          Cmd.pp,
+          cmd,
+          signal,
+          httpcode,
+          Fmt.lines,
+          stderr,
+        )
+      | _ =>
+        RunAsync.errorf(
+          "@[<v>error running curl: %a:@\nProcess was signalled. Signal Code: %i\nstderr:@[<v 2>@\n%a@]@]",
+          Cmd.pp,
+          cmd,
+          signal,
+          Fmt.lines,
+          stderr,
+        )
+      }
+    | Unix.WSTOPPED(signal) =>
+      switch (parseStdout(stdout)) {
+      | Ok((_stdout, httpcode)) when httpcode == 404 =>
+        RunAsync.return(NotFound)
+      | Ok((_stdout, httpcode)) =>
+        RunAsync.errorf(
+          "@[<v>error running curl: %a:@\nProcess was stopped. Signal Code: %i@\nHTTP Code: %i@\nstderr:@[<v 2>@\n%a@]@]",
+          Cmd.pp,
+          cmd,
+          signal,
+          httpcode,
+          Fmt.lines,
+          stderr,
+        )
+      | _ =>
+        RunAsync.errorf(
+          "@[<v>error running curl: %a:@\nProcess was stopped. Signal Code: %i\nstderr:@[<v 2>@\n%a@]@]",
+          Cmd.pp,
+          cmd,
+          signal,
           Fmt.lines,
           stderr,
         )
@@ -63,7 +113,8 @@ let runCurl = cmd => {
     };
   };
 
-  try%lwt(EsyBashLwt.with_process_full(cmd, f)) {
+  let tl = Cmd.getToolAndLine(cmd);
+  try%lwt(Lwt_process.with_process_full(tl, f)) {
   | [@implicit_arity] Unix.Unix_error(err, _, _) =>
     let msg = Unix.error_message(err);
     RunAsync.error(msg);
@@ -149,7 +200,7 @@ let get = (~accept=?, url) => {
 
 let download = (~output, url) => {
   open RunAsync.Syntax;
-  let output = EsyBash.normalizePathForCygwin(Path.show(output));
+  let output = output |> Path.show;
   let cmd =
     Cmd.(
       v("curl")

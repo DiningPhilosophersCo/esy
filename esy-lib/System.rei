@@ -50,6 +50,8 @@ let supportsLongPaths: unit => bool;
 
 let ensureMinimumFileDescriptors: unit => unit;
 
+let getRegistryKey: (string, string) => string;
+
 let moveFile: (string, string) => unit;
 
 let getumask: unit => int;
