@@ -77,9 +77,10 @@ let computeOfFile = (~kind=Sha256, path) => {
   RunAsync.ofBosError(
     {
       open Result.Syntax;
-      let path = EsyBash.normalizePathForCygwin(Path.show(path));
+      let path = path |> Path.show; // |> EsyBash.normalizePathForCygwin;
       let* out = EsyBash.runOut(Cmd.(cmd % path |> toBosCmd));
-      switch (Astring.String.cut(~sep=" ", out)) {
+      /* let* out = Cmd.(cmd % path) |> Cmd.toBosCmd |> Bos.OS.Cmd.run_out |> Bos.OS.Cmd.to_string; */
+      switch (out |> String.trim |> Str.global_replace(Str.regexp("\\"), "") |> Astring.String.cut(~sep=" ")) {
       | Some((v, _)) => return((kind, v))
       | None => return((kind, String.trim(out)))
       };
@@ -103,9 +104,10 @@ let checkFile = (~path, checksum: t) => {
     RunAsync.ofBosError(
       {
         open Result.Syntax;
-        let path = EsyBash.normalizePathForCygwin(Path.show(path));
+        let path = path |> Path.show; // |> EsyBash.normalizePathForCygwin;
         let* out = EsyBash.runOut(Cmd.(cmd % path |> toBosCmd));
-        switch (Astring.String.cut(~sep=" ", out)) {
+        /* let* out = Cmd.(cmd % path) |> Cmd.toBosCmd |> Bos.OS.Cmd.run_out |> Bos.OS.Cmd.to_string; */
+        switch (out |> String.trim |> Str.global_replace(Str.regexp("\\"), "") |> Astring.String.cut(~sep=" ")) {
         | Some((v, _)) => return(v)
         | None => return(String.trim(out))
         };
